@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0a0a0c">
+<title>Birthday Edition</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=Zen+Kaku+Gothic+New:wght@400;500;700;900&display=swap" rel="stylesheet">
+
+<script src="https://cdn.tailwindcss.com/3.4.17"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: {
+          display: ['"Bricolage Grotesque"', '"Zen Kaku Gothic New"', 'sans-serif'],
+          sans: ['"Zen Kaku Gothic New"', '"Hiragino Sans"', '"Noto Sans JP"', 'sans-serif'],
+        },
+        colors: { ink: '#0a0a0c', gold: '#f5c75a' },
+      },
+    },
+  };
+</script>
+
+<style>
+  :root { color-scheme: dark; }
+  html, body { background: #0a0a0c; }
+  body { font-family: 'Zen Kaku Gothic New', sans-serif; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+
+  /* ---------- Aurora background ---------- */
+  .aurora { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
+  .aurora i { position: absolute; border-radius: 9999px; filter: blur(90px); opacity: .55; will-change: transform; }
+  .aurora .b1 { width: 70vmax; height: 70vmax; left: -25vmax; top: -30vmax; background: radial-gradient(circle, #6d3bff 0%, transparent 65%); animation: drift1 22s ease-in-out infinite alternate; }
+  .aurora .b2 { width: 60vmax; height: 60vmax; right: -25vmax; top: 5vh; background: radial-gradient(circle, #2f6bff 0%, transparent 65%); animation: drift2 26s ease-in-out infinite alternate; opacity: .4; }
+  .aurora .b3 { width: 55vmax; height: 55vmax; left: -10vmax; bottom: -30vmax; background: radial-gradient(circle, #ff3d9a 0%, transparent 65%); animation: drift3 24s ease-in-out infinite alternate; opacity: .38; }
+  .aurora .b4 { width: 38vmax; height: 38vmax; right: -8vmax; bottom: -14vmax; background: radial-gradient(circle, #f5c75a 0%, transparent 65%); animation: drift1 30s ease-in-out infinite alternate-reverse; opacity: .22; }
+  @keyframes drift1 { to { transform: translate3d(8vmax, 6vmax, 0) scale(1.15); } }
+  @keyframes drift2 { to { transform: translate3d(-9vmax, 8vmax, 0) scale(.9); } }
+  @keyframes drift3 { to { transform: translate3d(10vmax, -7vmax, 0) scale(1.2); } }
+  .vignette { position: fixed; inset: 0; z-index: 1; pointer-events: none; background: radial-gradient(120% 90% at 50% 40%, transparent 35%, rgba(10,10,12,.85) 100%); }
+  .grain { position: fixed; inset: 0; z-index: 2; pointer-events: none; opacity: .07; mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>"); }
+
+  /* ---------- Glass ---------- */
+  .glass {
+    background: linear-gradient(180deg, rgba(255,255,255,.075), rgba(255,255,255,.02));
+    -webkit-backdrop-filter: blur(26px) saturate(150%);
+    backdrop-filter: blur(26px) saturate(150%);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.14), inset 0 0 0 1px rgba(255,255,255,.07);
+  }
+
+  /* rotating light along the edge */
+  @property --a { syntax: '<angle>'; inherits: false; initial-value: 0deg; }
+  .edge { position: relative; }
+  .edge::before {
+    content: ''; position: absolute; inset: 0; border-radius: inherit; padding: 1px; pointer-events: none;
+    background: conic-gradient(from var(--a), transparent 0 52%, rgba(109,59,255,.95) 66%, rgba(255,61,154,.95) 80%, rgba(245,199,90,1) 92%, transparent 100%);
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor; mask-composite: exclude;
+    animation: spin 7s linear infinite;
+  }
+  @keyframes spin { to { --a: 360deg; } }
+
+  /* ---------- Ticket ---------- */
+  .tilt {
+    position: relative;
+    transform: perspective(1000px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+    transition: transform .35s cubic-bezier(.2,.8,.2,1);
+    touch-action: pan-y;
+  }
+  .tilt.moving { transition: transform .08s linear; }
+
+  .ticket {
+    --n: 224px;
+    position: relative; overflow: hidden;
+    -webkit-mask: radial-gradient(circle 14px at 0 var(--n), #0000 98%, #000), radial-gradient(circle 14px at 100% var(--n), #0000 98%, #000);
+    -webkit-mask-composite: source-in;
+    mask: radial-gradient(circle 14px at 0 var(--n), #0000 98%, #000), radial-gradient(circle 14px at 100% var(--n), #0000 98%, #000);
+    mask-composite: intersect;
+  }
+  .ticket .top { height: 224px; position: relative; }
+  .ticket .perf { position: absolute; left: 26px; right: 26px; top: 224px; border-top: 2px dashed rgba(255,255,255,.16); }
+  .ticket .glare { position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: opacity .3s;
+    background: radial-gradient(380px circle at var(--gx, 50%) var(--gy, 0%), rgba(255,255,255,.16), transparent 60%); }
+  .tilt:hover .glare, .tilt.moving .glare { opacity: 1; }
+
+  .glow-back { position: absolute; inset: -18px; border-radius: 44px; z-index: -1; filter: blur(46px); opacity: .5;
+    background: conic-gradient(from 200deg, #6d3bff, #2f6bff, #ff3d9a, #f5c75a, #6d3bff);
+    transition: opacity .6s, transform .6s; animation: breathe 5s ease-in-out infinite; }
+  @keyframes breathe { 50% { opacity: .72; transform: scale(1.03); } }
+  [data-state="drawing"] ~ .glow-back, .tilt[data-state="drawing"] .glow-back { opacity: 1; transform: scale(1.12); animation: none; }
+
+  .layer { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity .5s, transform .6s, filter .5s; }
+  .num {
+    font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 108px; line-height: 1; letter-spacing: -.04em;
+    background: linear-gradient(180deg, rgba(255,255,255,.95), rgba(255,255,255,.12));
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .gold-text {
+    background: linear-gradient(110deg, #fff6d2 0%, #f5c75a 28%, #c8922a 50%, #ffe9a8 72%, #f5c75a 100%);
+    background-size: 220% 100%; -webkit-background-clip: text; background-clip: text; color: transparent;
+    animation: sheen 3.6s linear infinite;
+  }
+  @keyframes sheen { to { background-position: -220% 0; } }
+  .grade { font-family: 'Bricolage Grotesque', 'Zen Kaku Gothic New', sans-serif; font-weight: 800; letter-spacing: -.03em; line-height: 1; font-size: 92px; text-align: center; }
+  .grade.long { font-size: 52px; }
+  .grade.rolling { filter: blur(3px); opacity: .75; animation: none; }
+
+  /* state machine */
+  .ticket .idle-layer { opacity: 1; }
+  .ticket .reveal-layer { opacity: 0; transform: scale(1.35); filter: blur(18px); }
+  [data-state="drawing"] .idle-layer { opacity: 0; transform: scale(.9); }
+  [data-state="drawing"] .reveal-layer, [data-state="revealed"] .reveal-layer { opacity: 1; transform: scale(1); filter: blur(0); }
+  [data-state="revealed"] .idle-layer { opacity: 0; transform: scale(.9); }
+  [data-state="revealed"] .reveal-layer { transition: opacity .7s, transform .9s cubic-bezier(.2,.9,.2,1.15), filter .7s; }
+
+  .pane { display: none; }
+  [data-state="idle"] .pane-idle, [data-state="drawing"] .pane-drawing, [data-state="revealed"] .pane-revealed { display: block; animation: paneIn .7s cubic-bezier(.2,.8,.2,1) both; }
+  @keyframes paneIn { from { opacity: 0; transform: translateY(14px); filter: blur(6px); } }
+
+  [data-state="drawing"] .ticket { animation: shake 1.9s ease-in both; }
+  @keyframes shake {
+    0% { transform: none; } 20% { transform: translate(-1px, 1px) rotate(-.2deg); } 40% { transform: translate(2px, -1px) rotate(.4deg); }
+    60% { transform: translate(-3px, 2px) rotate(-.6deg); } 80% { transform: translate(4px, -2px) rotate(.9deg); } 100% { transform: translate(-5px, 3px) rotate(-1.1deg) scale(1.02); }
+  }
+
+  /* progress */
+  .bar { height: 6px; border-radius: 9999px; background: rgba(255,255,255,.08); overflow: hidden; }
+  .bar > i { display: block; height: 100%; width: 0; border-radius: inherit; background: linear-gradient(90deg, #6d3bff, #ff3d9a, #f5c75a); box-shadow: 0 0 18px rgba(255,61,154,.8); }
+  [data-state="drawing"] .bar > i { animation: fill 1.9s cubic-bezier(.6,.05,.3,1) forwards; }
+  @keyframes fill { to { width: 100%; } }
+
+  /* ---------- Buttons ---------- */
+  .cta {
+    position: relative; overflow: hidden; isolation: isolate; display: flex; width: 100%; align-items: center; justify-content: center; gap: .6rem;
+    padding: 1.05rem 1.5rem; border-radius: 1rem; font-weight: 900; font-size: 1.05rem; letter-spacing: .04em; color: #1a1204;
+    background: linear-gradient(120deg, #fff1bf 0%, #f5c75a 40%, #e0a431 100%);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.7), 0 0 0 1px rgba(255,236,170,.35), 0 12px 40px -10px rgba(245,199,90,.65), 0 0 60px -10px rgba(255,61,154,.35);
+    transition: transform .25s cubic-bezier(.2,.8,.2,1), box-shadow .3s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .cta::after { content: ''; position: absolute; top: 0; bottom: 0; left: -60%; width: 40%; z-index: -1; transform: skewX(-20deg);
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,.75), transparent); }
+  .cta:hover, .cta:focus-visible { transform: translateY(-2px) scale(1.02);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.8), 0 0 0 1px rgba(255,236,170,.6), 0 18px 60px -8px rgba(245,199,90,.9), 0 0 90px -6px rgba(255,61,154,.55); }
+  .cta:hover::after, .cta:focus-visible::after, .cta:active::after { animation: sweep .9s ease; }
+  .cta:active { transform: scale(.96); }
+  @keyframes sweep { to { left: 130%; } }
+  .cta.pulse { animation: ctaPulse 2.6s ease-in-out infinite; }
+  @keyframes ctaPulse { 50% { box-shadow: inset 0 1px 0 rgba(255,255,255,.7), 0 0 0 1px rgba(255,236,170,.5), 0 14px 56px -6px rgba(245,199,90,.9), 0 0 80px -4px rgba(109,59,255,.6); } }
+
+  .ghost { display: flex; width: 100%; align-items: center; justify-content: center; padding: .85rem 1.25rem; border-radius: 1rem; font-weight: 700; font-size: .92rem; color: rgba(255,255,255,.82);
+    background: rgba(255,255,255,.05); box-shadow: inset 0 0 0 1px rgba(255,255,255,.12); transition: background .25s, transform .25s, box-shadow .25s; -webkit-tap-highlight-color: transparent; }
+  .ghost:hover { background: rgba(255,255,255,.1); box-shadow: inset 0 0 0 1px rgba(255,255,255,.25), 0 0 30px -6px rgba(139,92,246,.6); }
+  .ghost:active { transform: scale(.97); }
+  :focus-visible { outline: 2px solid #f5c75a; outline-offset: 3px; }
+
+  /* ---------- Effects ---------- */
+  #fx { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 60; pointer-events: none; }
+  .flash { position: fixed; inset: 0; z-index: 55; pointer-events: none; opacity: 0;
+    background: radial-gradient(circle at var(--fx, 50%) var(--fy, 40%), rgba(255,246,210,.95), rgba(245,199,90,.45) 25%, rgba(139,92,246,.2) 55%, transparent 75%); }
+  .flash.go { animation: flash 1.1s ease-out; }
+  @keyframes flash { 0% { opacity: 0; } 12% { opacity: 1; } 100% { opacity: 0; } }
+  .shock { position: fixed; z-index: 54; pointer-events: none; width: 20px; height: 20px; margin: -10px 0 0 -10px; border-radius: 9999px;
+    box-shadow: 0 0 0 2px rgba(255,233,168,.9), 0 0 40px 6px rgba(255,61,154,.6), inset 0 0 30px rgba(139,92,246,.7); animation: shock 1.2s cubic-bezier(.1,.7,.2,1) forwards; }
+  @keyframes shock { to { transform: scale(26); opacity: 0; } }
+
+  /* collection slots */
+  .slot { aspect-ratio: 1; border-radius: 1rem; display: flex; align-items: center; justify-content: center; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: .95rem;
+    background: rgba(255,255,255,.04); box-shadow: inset 0 0 0 1px rgba(255,255,255,.08); color: rgba(255,255,255,.28); }
+  .slot.on { color: #1a1204; background: linear-gradient(135deg, #fff1bf, #f5c75a 60%, #d9962a); box-shadow: 0 0 24px -4px rgba(245,199,90,.7); }
+
+  .rise { animation: rise 1s cubic-bezier(.2,.8,.2,1) both; }
+  @keyframes rise { from { opacity: 0; transform: translateY(24px); filter: blur(8px); } }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+  }
+</style>
+</head>
+
+<body class="min-h-[100svh] text-white">
+
+<div class="aurora" aria-hidden="true"><i class="b1"></i><i class="b2"></i><i class="b3"></i><i class="b4"></i></div>
+<div class="vignette" aria-hidden="true"></div>
+<div class="grain" aria-hidden="true"></div>
+<canvas id="fx" aria-hidden="true"></canvas>
+<div id="flash" class="flash" aria-hidden="true"></div>
+
+<main class="relative z-10 mx-auto flex min-h-[100svh] w-full max-w-md flex-col px-5 pt-[max(1.5rem,env(safe-area-inset-top))] pb-[max(1.75rem,env(safe-area-inset-bottom))]">
+
+  <!-- header -->
+  <header class="flex items-center justify-between">
+    <div class="flex items-center gap-2.5">
+      <span class="relative inline-block h-3 w-3 rotate-45 rounded-[3px] bg-gradient-to-br from-[#fff1bf] to-[#d9962a] shadow-[0_0_18px_rgba(245,199,90,.9)]"></span>
+      <span class="font-display text-[15px] font-semibold tracking-tight text-white/90">Birthday Edition</span>
+    </div>
+    <div class="glass rounded-full px-3.5 py-1.5 text-xs font-semibold text-white/75">
+      <span id="count" class="font-display text-white">0</span><span class="text-white/40"> / 10</span>
+    </div>
+  </header>
+
+  <!-- hero + content -->
+  <div class="flex flex-1 flex-col justify-center gap-8 py-8">
+
+    <div class="rise" style="animation-delay:.05s">
+      <h1 class="font-display text-[44px] font-extrabold leading-[1.02] tracking-[-.035em] sm:text-5xl">
+        <span class="bg-gradient-to-b from-white to-white/55 bg-clip-text text-transparent">Happy</span><br>
+        <span class="bg-gradient-to-r from-[#b79cff] via-[#ff7ac0] to-[#f5c75a] bg-clip-text text-transparent">Birthday<span id="toName"></span></span>
+      </h1>
+      <p id="lead" class="mt-4 max-w-[22rem] text-[15px] leading-relaxed text-white/60">あなただけに用意した、特別なくじです。</p>
+    </div>
+
+    <!-- ticket view -->
+    <section id="ticketView" class="rise hidden" style="animation-delay:.2s">
+      <div id="tilt" class="tilt" data-state="idle">
+        <div class="glow-back" aria-hidden="true"></div>
+        <article id="ticket" class="ticket glass edge rounded-[28px]">
+          <div class="top">
+            <div class="glare"></div>
+
+            <div class="layer idle-layer">
+              <p class="mb-1 text-[13px] font-medium text-white/50">チケット No.</p>
+              <div id="num" class="num">00</div>
+            </div>
+
+            <div class="layer reveal-layer">
+              <div id="grade" class="grade gold-text"></div>
+              <p id="gradeSub" class="mt-2 text-xs font-medium text-white/50"></p>
+            </div>
+          </div>
+          <div class="perf"></div>
+
+          <div class="p-7 pt-8">
+            <!-- idle -->
+            <div class="pane pane-idle">
+              <p class="mb-1 text-lg font-bold leading-snug">ひとつだけ、引いてください。</p>
+              <p class="mb-6 text-sm leading-relaxed text-white/55">ボタンを押すと、あなたのプレゼントが開きます。</p>
+              <button id="drawBtn" class="cta pulse" type="button">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/><path d="M19 17l.7 1.8L21.5 19.5l-1.8.7L19 22l-.7-1.8-1.8-.7 1.8-.7z"/></svg>
+                くじを開く
+              </button>
+            </div>
+
+            <!-- drawing -->
+            <div class="pane pane-drawing" aria-live="polite">
+              <p class="mb-1 text-lg font-bold">抽選中…</p>
+              <p class="mb-6 text-sm text-white/55">あなたへのプレゼントを探しています。</p>
+              <div class="bar"><i></i></div>
+            </div>
+
+            <!-- revealed -->
+            <div class="pane pane-revealed" aria-live="polite">
+              <p id="prizeTitle" class="text-[22px] font-extrabold leading-snug tracking-tight"></p>
+              <p id="prizeMsg" class="mt-3 text-[15px] leading-[1.85] text-white/65"></p>
+              <button id="replayBtn" class="ghost mt-7" type="button">もう一度、演出を見る</button>
+            </div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- landing / invalid -->
+    <section id="landingView" class="rise hidden" style="animation-delay:.2s">
+      <div class="glass edge rounded-[28px] p-7">
+        <p id="landingTitle" class="text-lg font-bold">QRコードを読み取ってください</p>
+        <p id="landingText" class="mt-2 mb-6 text-sm leading-relaxed text-white/55">10枚のチケットのうち、手元にあるQRコードをスマホで読み取ると、くじが開きます。</p>
+        <div id="slots" class="grid grid-cols-5 gap-2.5"></div>
+      </div>
+    </section>
+
+  </div>
+
+  <footer class="text-center text-xs text-white/30">Made for you</footer>
+</main>
+
+<script>
+/* =====================================================
+   ここを編集してください
+   ===================================================== */
+// 名前を入れると "Happy Birthday, ○○" になります。空なら表示しません。
+const TO_NAME = '';
+
+// ?id=1〜10 に対応する10種類のプレゼント（下は仮の内容です。自由に書き換えてください）
+const PRIZES = [
+  { grade: 'A賞',        title: 'プレゼント名をここに',  msg: 'メッセージをここに。ひとことでも、長めでも大丈夫です。' },
+  { grade: 'B賞',        title: 'プレゼント名をここに',  msg: 'メッセージをここに。' },
+  { grade: 'C賞',        title: 'プレゼント名をここに',  msg: 'メッセージをここに。' },
+  { grade: 'D賞',        title: 'プレゼント名をここに',  msg: 'メッセージをここに。' },
+  { grade: 'E賞',        title: 'プレゼント名をここに',  msg: 'メッセージをここに。' },
+  { grade: 'F賞',        title: 'プレゼント名をここに',  msg: 'メッセージをここに。' },
+  { grade: 'G賞',        title: 'プレゼント名をここに',  msg: 'メッセージをここに。' },
+  { grade: 'H賞',        title: 'プレゼント名をここに',  msg: 'メッセージをここに。' },
+  { grade: 'ダブルチャンス賞', title: 'プレゼント名をここに', msg: 'メッセージをここに。' },
+  { grade: 'ラストワン賞', title: 'プレゼント名をここに',  msg: 'メッセージをここに。' },
+];
+
+/* =====================================================
+   状態管理（開封済みはLocalStorageに保存）
+   ===================================================== */
+const KEY = 'birthday-lottery-opened-v1';
+const params = new URLSearchParams(location.search);
+
+// テスト用: ?reset を付けると開封履歴を消去できます
+if (params.has('reset')) { try { localStorage.removeItem(KEY); } catch (e) {} }
+
+function loadOpened() {
+  try { const v = JSON.parse(localStorage.getItem(KEY) || '[]'); return Array.isArray(v) ? v : []; }
+  catch (e) { return []; }
+}
+function saveOpened(list) { try { localStorage.setItem(KEY, JSON.stringify(list)); } catch (e) {} }
+
+let opened = loadOpened();
+const id = parseInt(params.get('id'), 10);
+const valid = Number.isInteger(id) && id >= 1 && id <= PRIZES.length;
+const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+const $ = (s) => document.querySelector(s);
+const tilt = $('#tilt'), ticket = $('#ticket');
+
+function updateCount() { $('#count').textContent = opened.length; }
+
+/* =====================================================
+   画面の組み立て
+   ===================================================== */
+function buildSlots() {
+  const wrap = $('#slots');
+  wrap.innerHTML = '';
+  for (let i = 1; i <= PRIZES.length; i++) {
+    const d = document.createElement('div');
+    const on = opened.includes(i);
+    d.className = 'slot' + (on ? ' on' : '');
+    d.textContent = String(i).padStart(2, '0');
+    wrap.appendChild(d);
+  }
+}
+
+function setName() { if (TO_NAME) $('#toName').textContent = ', ' + TO_NAME; }
+
+function showPrize(p) {
+  const g = $('#grade');
+  g.textContent = p.grade;
+  g.classList.toggle('long', p.grade.length > 3);
+  $('#gradeSub').textContent = '';
+  $('#prizeTitle').textContent = p.title;
+  $('#prizeMsg').textContent = p.msg;
+}
+
+function init() {
+  setName();
+  updateCount();
+
+  if (!valid) {
+    $('#landingView').classList.remove('hidden');
+    buildSlots();
+    if (params.has('id')) {
+      $('#landingTitle').textContent = 'このQRコードは読み取れませんでした';
+      $('#landingText').textContent = 'もう一度、QRコードを読み取ってください。';
+    }
+    return;
+  }
+
+  $('#ticketView').classList.remove('hidden');
+  $('#num').textContent = String(id).padStart(2, '0');
+  const p = PRIZES[id - 1];
+  showPrize(p);
+
+  if (opened.includes(id)) {
+    $('#lead').textContent = 'このくじは、もう開いています。';
+    setState('revealed');
+  }
+}
+
+function setState(s) { tilt.dataset.state = s; }
+
+/* =====================================================
+   抽選演出
+   ===================================================== */
+let busy = false;
+
+function startDraw() {
+  if (busy) return;
+  busy = true;
+  const p = PRIZES[id - 1];
+  const gradeEl = $('#grade');
+  const pool = PRIZES.map(x => x.grade);
+
+  setState('drawing');
+  gradeEl.classList.add('rolling');
+  if (navigator.vibrate) navigator.vibrate([20, 40, 20]);
+
+  // スロットのように賞が切り替わり、だんだん遅くなって止まる
+  const total = reduceMotion ? 300 : 1900;
+  let t = 0, delay = 55;
+  (function tick() {
+    if (t >= total) return finishDraw(p);
+    gradeEl.classList.toggle('long', false);
+    const g = pool[Math.floor(Math.random() * pool.length)];
+    gradeEl.textContent = g.length > 3 ? g.slice(0, 1) + '賞' : g;
+    t += delay; delay *= 1.085;
+    setTimeout(tick, delay);
+  })();
+}
+
+function finishDraw(p) {
+  const gradeEl = $('#grade');
+  gradeEl.classList.remove('rolling');
+  gradeEl.textContent = p.grade;
+  gradeEl.classList.toggle('long', p.grade.length > 3);
+
+  const r = ticket.getBoundingClientRect();
+  const cx = r.left + r.width / 2, cy = r.top + 112;
+  const flash = $('#flash');
+  flash.style.setProperty('--fx', cx + 'px');
+  flash.style.setProperty('--fy', cy + 'px');
+  flash.classList.remove('go'); void flash.offsetWidth; flash.classList.add('go');
+
+  setState('revealed');
+  $('#lead').textContent = 'おめでとう。これが、あなたへのプレゼントです。';
+
+  if (!opened.includes(id)) { opened.push(id); saveOpened(opened); updateCount(); }
+  if (navigator.vibrate) navigator.vibrate([60, 30, 120]);
+  celebrate(cx, cy);
+  busy = false;
+}
+
+function replay() {
+  if (busy) return;
+  const r = ticket.getBoundingClientRect();
+  const cx = r.left + r.width / 2, cy = r.top + 112;
+  const flash = $('#flash');
+  flash.style.setProperty('--fx', cx + 'px');
+  flash.style.setProperty('--fy', cy + 'px');
+  flash.classList.remove('go'); void flash.offsetWidth; flash.classList.add('go');
+  celebrate(cx, cy);
+}
+
+$('#drawBtn')?.addEventListener('click', startDraw);
+$('#replayBtn')?.addEventListener('click', replay);
+
+/* =====================================================
+   チルト（傾き）＆ グレア
+   ===================================================== */
+tilt.addEventListener('pointermove', (e) => {
+  if (reduceMotion || tilt.dataset.state === 'drawing') return;
+  const r = tilt.getBoundingClientRect();
+  const px = (e.clientX - r.left) / r.width, py = (e.clientY - r.top) / r.height;
+  tilt.classList.add('moving');
+  tilt.style.setProperty('--rx', ((.5 - py) * 9).toFixed(2) + 'deg');
+  tilt.style.setProperty('--ry', ((px - .5) * 11).toFixed(2) + 'deg');
+  tilt.style.setProperty('--gx', (px * 100).toFixed(1) + '%');
+  tilt.style.setProperty('--gy', (py * 100).toFixed(1) + '%');
+});
+['pointerleave', 'pointerup', 'pointercancel'].forEach(ev => tilt.addEventListener(ev, () => {
+  tilt.classList.remove('moving');
+  tilt.style.setProperty('--rx', '0deg');
+  tilt.style.setProperty('--ry', '0deg');
+}));
+
+/* =====================================================
+   コンフェッティ（金・紫・青・ピンクの光と紙片）
+   ===================================================== */
+const cv = $('#fx'), ctx = cv.getContext('2d');
+let W = 0, H = 0, DPR = 1, parts = [], raf = null;
+
+function resize() {
+  DPR = Math.min(window.devicePixelRatio || 1, 2);
+  W = innerWidth; H = innerHeight;
+  cv.width = W * DPR; cv.height = H * DPR;
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+}
+addEventListener('resize', resize); resize();
+
+const COLORS = ['#f5c75a', '#ffe9a8', '#ffffff', '#8b5cf6', '#6366f1', '#38bdf8', '#ec4899', '#f472b6'];
+const rand = (a, b) => a + Math.random() * (b - a);
+const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+
+function spawn(x, y, angle, speed, kind) {
+  const shape = kind || pick(['rect', 'rect', 'circle', 'streak', 'star']);
+  parts.push({
+    x, y, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed,
+    w: shape === 'streak' ? rand(1.5, 2.5) : rand(5, 10), h: shape === 'streak' ? rand(14, 26) : rand(7, 14),
+    rot: rand(0, Math.PI * 2), vr: rand(-.25, .25), wob: rand(0, 6), vw: rand(.1, .3),
+    color: pick(COLORS), shape, life: 0, max: rand(110, 190),
+  });
+}
+
+function burst(x, y, n, minS, maxS) {
+  for (let i = 0; i < n; i++) spawn(x, y, rand(0, Math.PI * 2), rand(minS, maxS));
+}
+function cannon(x, y, baseAngle, n) {
+  for (let i = 0; i < n; i++) spawn(x, y, baseAngle + rand(-.35, .35), rand(11, 22));
+}
+function shower(n) {
+  for (let i = 0; i < n; i++) spawn(rand(0, W), rand(-60, -10), Math.PI / 2 + rand(-.3, .3), rand(1.5, 4));
+}
+
+function celebrate(cx, cy) {
+  if (reduceMotion) { burst(cx, cy, 40, 4, 9); loop(); return; }
+  const ring = document.createElement('div');
+  ring.className = 'shock'; ring.style.left = cx + 'px'; ring.style.top = cy + 'px';
+  document.body.appendChild(ring); setTimeout(() => ring.remove(), 1300);
+
+  burst(cx, cy, 120, 5, 17);
+  setTimeout(() => { cannon(0, H * .92, -Math.PI / 3, 55); cannon(W, H * .92, -Math.PI * 2 / 3, 55); loop(); }, 260);
+  setTimeout(() => { shower(70); loop(); }, 700);
+  setTimeout(() => { burst(cx, cy - 20, 60, 3, 11); loop(); }, 1100);
+  loop();
+}
+
+function loop() { if (!raf) raf = requestAnimationFrame(frame); }
+
+function drawStar(r) {
+  ctx.beginPath();
+  for (let i = 0; i < 8; i++) {
+    const rad = i % 2 ? r * .22 : r;
+    const a = (Math.PI / 4) * i;
+    ctx.lineTo(Math.cos(a) * rad, Math.sin(a) * rad);
+  }
+  ctx.closePath(); ctx.fill();
+}
+
+function frame() {
+  ctx.clearRect(0, 0, W, H);
+  for (let i = parts.length - 1; i >= 0; i--) {
+    const p = parts[i];
+    p.life++;
+    p.vx *= .985; p.vy = p.vy * .985 + .22;
+    p.x += p.vx; p.y += p.vy; p.rot += p.vr; p.wob += p.vw;
+    const fade = Math.max(0, Math.min(1, (p.max - p.life) / 40));
+    if (p.life > p.max || p.y > H + 40) { parts.splice(i, 1); continue; }
+
+    ctx.save();
+    ctx.translate(p.x, p.y); ctx.rotate(p.rot);
+    ctx.globalAlpha = fade; ctx.fillStyle = p.color;
+    if (p.shape === 'rect') { ctx.scale(1, Math.cos(p.wob)); ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h); }
+    else if (p.shape === 'circle') { ctx.shadowColor = p.color; ctx.shadowBlur = 10; ctx.beginPath(); ctx.arc(0, 0, p.w / 2, 0, 7); ctx.fill(); }
+    else if (p.shape === 'streak') { ctx.shadowColor = p.color; ctx.shadowBlur = 8; ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h); }
+    else { ctx.shadowColor = p.color; ctx.shadowBlur = 14; drawStar(p.w + 2); }
+    ctx.restore();
+  }
+  raf = parts.length ? requestAnimationFrame(frame) : null;
+  if (!parts.length) ctx.clearRect(0, 0, W, H);
+}
+
+init();
+</script>
+</body>
+</html>
